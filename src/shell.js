@@ -27,3 +27,4 @@ export function renderShell({ tagline, subtitle, content }) {
 export function reveal() {
   document.getElementById(HIDE_ID)?.remove();
 }
+

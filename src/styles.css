@@ -117,10 +117,8 @@ body {
   .spinner, .shake { animation: none; }
 }
 
-/* Page-to-page navigation is animated; the Log in and Sign up forms slide and crossfade. */
-@view-transition {
-  navigation: auto;
-}
+/* Page-to-page navigation is animated (opted in by boot.js); the Log in and Sign up forms
+   slide and crossfade. */
 .form-transition {
   view-transition-name: form;
 }
@@ -140,10 +138,4 @@ body {
 }
 @keyframes form-in {
   from { opacity: 0; transform: translateX(16px); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  @view-transition {
-    navigation: none;
-  }
 }
