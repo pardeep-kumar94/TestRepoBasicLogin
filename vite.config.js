@@ -34,6 +34,12 @@ const pageTags = [
     },
     injectTo: 'head',
   },
+  {
+    tag: 'noscript',
+    children:
+      '<style>html{visibility:visible}</style><p style="font:16px system-ui;padding:2rem">This page needs JavaScript to Log in or Sign up.</p>',
+    injectTo: 'body',
+  },
 ];
 
 export default defineConfig({

@@ -77,9 +77,9 @@ body {
   opacity: 0.85;
   animation: drift 18s ease-in-out infinite alternate;
 }
-.sunset .b1 { width: 60%; background: var(--sun-4); top: -15%; left: -10%; }
-.sunset .b2 { width: 55%; background: var(--sun-3); bottom: -20%; right: -10%; animation-duration: 22s; animation-delay: -6s; }
-.sunset .b3 { width: 40%; background: var(--sun-2); top: 35%; left: 35%; animation-duration: 26s; animation-delay: -12s; }
+.sunset .b1 { width: 60%; background: var(--sun-4); top: -15%; left: -10%; animation-delay: var(--drift-clock, 0s); }
+.sunset .b2 { width: 55%; background: var(--sun-3); bottom: -20%; right: -10%; animation-duration: 22s; animation-delay: calc(var(--drift-clock, 0s) - 6s); }
+.sunset .b3 { width: 40%; background: var(--sun-2); top: 35%; left: 35%; animation-duration: 26s; animation-delay: calc(var(--drift-clock, 0s) - 12s); }
 .sunset .grain {
   position: absolute;
   inset: 0;
