@@ -30,7 +30,7 @@ const rules = {
 };
 
 // The error message for one field, or '' when it is valid. `screen` is 'login' or 'signup'.
-function validateField(field, value, screen) {
+export function validateField(field, value, screen) {
   return rules[field](value ?? '', screen);
 }
 

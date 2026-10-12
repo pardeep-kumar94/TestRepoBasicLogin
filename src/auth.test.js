@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createAuth } from './auth.js';
+import { createAuth, validateField } from './auth.js';
 
 function memoryStorage() {
   const items = new Map();
@@ -146,5 +146,48 @@ describe('Log out', () => {
     const { auth } = await loggedIn();
     await auth.logOut();
     expect((await auth.logIn(ada)).ok).toBe(true);
+  });
+});
+
+describe('validateField', () => {
+  it.each([
+    ['name', 'a'.repeat(50), 'signup'],
+    ['name', '李明', 'signup'],
+    ['name', "Zoë O'Brien", 'signup'],
+    ['name', '  Ada  ', 'signup'],
+    ['email', 'ada@example.com', 'signup'],
+    ['email', '  Ada@Example.COM ', 'login'],
+    ['password', 'abcdefg1', 'signup'],
+    ['password', 'pässwörd9', 'signup'],
+    ['password', 'x', 'login'],
+  ])('accepts %s %j on %s', (field, value, screen) => {
+    expect(validateField(field, value, screen)).toBe('');
+  });
+
+  it.each([
+    ['name', '', 'signup'],
+    ['name', '   ', 'signup'],
+    ['name', 'a'.repeat(51), 'signup'],
+    ['email', '', 'login'],
+    ['email', 'ada', 'signup'],
+    ['email', 'ada@example', 'signup'],
+    ['email', 'ada @example.com', 'signup'],
+    ['password', 'abcdef1', 'signup'],
+    ['password', 'abcdefgh', 'signup'],
+    ['password', '12345678', 'signup'],
+    ['password', '', 'login'],
+  ])('rejects %s %j on %s with a message', (field, value, screen) => {
+    expect(validateField(field, value, screen)).not.toBe('');
+  });
+
+  it('agrees with Sign up about what is valid', async () => {
+    const { auth } = setup();
+    const details = { name: 'a'.repeat(51), email: 'ada', password: 'abcdefgh' };
+    const { fieldErrors } = await auth.signUp(details);
+    expect(fieldErrors).toEqual({
+      name: validateField('name', details.name, 'signup'),
+      email: validateField('email', details.email, 'signup'),
+      password: validateField('password', details.password, 'signup'),
+    });
   });
 });

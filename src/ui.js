@@ -35,6 +35,18 @@ export function field({ name, label, icon, type = 'text', autocomplete, placehol
     </div>`;
 }
 
+// Eye button inside a password field; form.js wires it up.
+export const passwordToggle = () => `
+  <button type="button" data-password-toggle aria-label="Show password" aria-pressed="false"
+    class="absolute inset-y-0 right-1 grid w-11 place-items-center rounded-full text-muted transition hover:text-fg ${focusRing}">${icons.eye('size-[18px]')}</button>`;
+
+// Dot-style strength meter under the Sign up password; form.js keeps it current.
+export const strengthMeter = () => `
+  <div data-strength class="mt-2 flex items-center gap-2 px-5" aria-live="polite">
+    <span data-strength-label class="text-xs text-muted"></span>
+    <div aria-hidden="true" class="ml-auto flex gap-1">${'<span data-strength-dot class="size-2 rounded-full bg-line transition-colors"></span>'.repeat(4)}</div>
+  </div>`;
+
 // Form-level message (wrong credentials, email already taken). Hidden while empty.
 export const formError = () =>
   `<div data-form-error role="alert" hidden class="mt-6 flex items-start gap-2 rounded-2xl bg-danger/10 px-4 py-3 text-sm text-danger"></div>`;

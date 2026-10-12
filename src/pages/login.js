@@ -1,8 +1,8 @@
 import { auth } from '../app-auth.js';
 import { takeEmailForLogIn, takeNotice } from '../handoff.js';
 import { renderShell, reveal } from '../shell.js';
-import { screenSwitch, field, formError, submitButton, heading, alertIcon, showToast } from '../ui.js';
-import { valuesOf, showFieldErrors, showFormError, setBusy } from '../form.js';
+import { screenSwitch, field, passwordToggle, formError, submitButton, heading, alertIcon, showToast } from '../ui.js';
+import { valuesOf, showFieldErrors, showFormError, setBusy, errorsIn, validateAsYouGo, wirePasswordToggle } from '../form.js';
 
 if (await auth.currentSession()) {
   location.replace('/');
@@ -18,7 +18,7 @@ if (await auth.currentSession()) {
         ${formError()}
         <div class="mt-7 space-y-3.5">
           ${field({ name: 'email', label: 'Email', icon: 'mail', type: 'email', autocomplete: 'email', placeholder: 'you@example.com', value: email })}
-          ${field({ name: 'password', label: 'Password', icon: 'lock', type: 'password', autocomplete: 'current-password', placeholder: 'Password' })}
+          ${field({ name: 'password', label: 'Password', icon: 'lock', type: 'password', autocomplete: 'current-password', placeholder: 'Password', trailing: passwordToggle() })}
         </div>
         ${submitButton('Log in')}
       </form>`,
@@ -32,9 +32,13 @@ if (await auth.currentSession()) {
 }
 
 function wire(form) {
+  validateAsYouGo(form, 'login');
+  wirePasswordToggle(form);
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     showFormError(form, '');
+    const errors = errorsIn(form, 'login');
+    if (errors) return showFieldErrors(form, errors);
     setBusy(form, true);
     const result = await auth.logIn(valuesOf(form));
     setBusy(form, false);
