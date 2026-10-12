@@ -116,3 +116,34 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .spinner, .shake { animation: none; }
 }
+
+/* Page-to-page navigation is animated; the Log in and Sign up forms slide and crossfade. */
+@view-transition {
+  navigation: auto;
+}
+.form-transition {
+  view-transition-name: form;
+}
+::view-transition-old(form),
+::view-transition-new(form) {
+  animation-duration: 0.35s;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+::view-transition-old(form) {
+  animation-name: form-out;
+}
+::view-transition-new(form) {
+  animation-name: form-in;
+}
+@keyframes form-out {
+  to { opacity: 0; transform: translateX(-16px); }
+}
+@keyframes form-in {
+  from { opacity: 0; transform: translateX(16px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+}

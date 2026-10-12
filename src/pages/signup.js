@@ -12,7 +12,7 @@ if (await auth.currentSession()) {
     subtitle: 'One Account, everything in its place.',
     content: `
       ${screenSwitch('signup')}
-      <form novalidate class="mt-10" data-form>
+      <form novalidate class="form-transition mt-10" data-form>
         ${heading('Create your Account', 'Just three things and you’re in.')}
         ${formError()}
         <div class="mt-7 space-y-3.5">

@@ -13,7 +13,7 @@ if (await auth.currentSession()) {
     subtitle: 'Your space is right where you left it.',
     content: `
       ${screenSwitch('login')}
-      <form novalidate class="mt-10" data-form>
+      <form novalidate class="form-transition mt-10" data-form>
         ${heading('Log in to your Account', 'Enter your details to continue.')}
         ${formError()}
         <div class="mt-7 space-y-3.5">
