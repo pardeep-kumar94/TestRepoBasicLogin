@@ -85,9 +85,66 @@ describe('Sign-up success page', () => {
   });
 });
 
+describe('Log in', () => {
+  it('starts a Session for an Account created at Sign up', async () => {
+    const { auth } = setup();
+    await auth.signUp({ ...ada, name: '  Ada Lovelace ' });
+    const account = { name: 'Ada Lovelace', email: 'ada@example.com' };
+    expect(await auth.logIn({ email: ' ADA@example.com', password: 'engine1843' })).toEqual({ ok: true, account });
+    expect(await auth.currentSession()).toEqual(account);
+  });
+
+  it.each([
+    ['an unknown email', { email: 'nobody@example.com', password: 'engine1843' }],
+    ['a wrong password', { email: 'ada@example.com', password: 'engine1844' }],
+  ])('gives the same generic answer for %s and starts no Session', async (_what, credentials) => {
+    const { auth } = setup();
+    await auth.signUp(ada);
+    expect(await auth.logIn(credentials)).toEqual({ ok: false, error: 'invalid-credentials' });
+    expect(await auth.currentSession()).toBeNull();
+  });
+
+  it.each([
+    ['email', { email: '', password: 'engine1843' }],
+    ['password', { email: 'ada@example.com', password: '' }],
+  ])('asks for a missing %s before checking credentials', async (field, credentials) => {
+    const { auth } = setup();
+    const result = await auth.logIn(credentials);
+    expect(result.ok).toBe(false);
+    expect(Object.keys(result.fieldErrors)).toEqual([field]);
+  });
+});
+
+const loggedIn = async () => {
+  const ctx = setup();
+  await ctx.auth.signUp(ada);
+  await ctx.auth.logIn(ada);
+  return ctx;
+};
+
 describe('Session', () => {
   it('has no Session before anyone has logged in', async () => {
     const { auth } = setup();
     expect(await auth.currentSession()).toBeNull();
+  });
+
+  it('survives a reload', async () => {
+    const { storage } = await loggedIn();
+    const afterReload = createAuth({ storage, delayMs: 0 });
+    expect(await afterReload.currentSession()).toEqual({ name: 'Ada Lovelace', email: 'ada@example.com' });
+  });
+});
+
+describe('Log out', () => {
+  it('ends the Session', async () => {
+    const { auth } = await loggedIn();
+    await auth.logOut();
+    expect(await auth.currentSession()).toBeNull();
+  });
+
+  it('keeps the Account so it can Log in again', async () => {
+    const { auth } = await loggedIn();
+    await auth.logOut();
+    expect((await auth.logIn(ada)).ok).toBe(true);
   });
 });

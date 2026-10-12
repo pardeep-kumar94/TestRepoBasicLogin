@@ -54,3 +54,20 @@ export const heading = (title, subtitle) => `
   <p class="mt-2 text-muted">${subtitle}</p>`;
 
 export const alertIcon = () => icons.alert('mt-0.5 size-4 shrink-0');
+
+// Brief message under the content column (centred on phones), announced to screen readers.
+export function showToast(text) {
+  const toast = document.createElement('div');
+  toast.setAttribute('role', 'status');
+  toast.className =
+    'fixed bottom-6 left-1/2 lg:left-[72.7%] z-50 -translate-x-1/2 rounded-full bg-fg px-5 py-3 text-sm font-medium text-bg shadow-lg transition-opacity duration-500';
+  toast.style.opacity = '0';
+  document.body.append(toast);
+  // Fill the live region after it exists so screen readers announce the change.
+  setTimeout(() => {
+    toast.textContent = text;
+    toast.style.opacity = '1';
+  }, 100);
+  setTimeout(() => (toast.style.opacity = '0'), 4000);
+  setTimeout(() => toast.remove(), 4600);
+}

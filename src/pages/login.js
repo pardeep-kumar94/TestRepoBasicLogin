@@ -1,4 +1,51 @@
+import { auth } from '../app-auth.js';
+import { takeEmailForLogIn, takeNotice } from '../handoff.js';
 import { renderShell, reveal } from '../shell.js';
+import { screenSwitch, field, formError, submitButton, heading, alertIcon, showToast } from '../ui.js';
+import { valuesOf, showFieldErrors, showFormError, setBusy } from '../form.js';
 
-renderShell({ tagline: 'Welcome back.', subtitle: 'Your space is right where you left it.', content: '' });
-reveal();
+if (await auth.currentSession()) {
+  location.replace('/');
+} else {
+  const email = takeEmailForLogIn() ?? '';
+  renderShell({
+    tagline: 'Welcome back.',
+    subtitle: 'Your space is right where you left it.',
+    content: `
+      ${screenSwitch('login')}
+      <form novalidate class="mt-10" data-form>
+        ${heading('Log in to your Account', 'Enter your details to continue.')}
+        ${formError()}
+        <div class="mt-7 space-y-3.5">
+          ${field({ name: 'email', label: 'Email', icon: 'mail', type: 'email', autocomplete: 'email', placeholder: 'you@example.com', value: email })}
+          ${field({ name: 'password', label: 'Password', icon: 'lock', type: 'password', autocomplete: 'current-password', placeholder: 'Password' })}
+        </div>
+        ${submitButton('Log in')}
+      </form>`,
+  });
+  const form = document.querySelector('[data-form]');
+  wire(form);
+  reveal();
+  if (email) form.elements.password.focus();
+  const notice = takeNotice();
+  if (notice) showToast(notice);
+}
+
+function wire(form) {
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    showFormError(form, '');
+    setBusy(form, true);
+    const result = await auth.logIn(valuesOf(form));
+    setBusy(form, false);
+
+    if (result.ok) {
+      location.assign('/');
+    } else if (result.fieldErrors) {
+      showFieldErrors(form, result.fieldErrors);
+    } else {
+      showFieldErrors(form, {});
+      showFormError(form, `${alertIcon()}<span>Email or password is incorrect.</span>`);
+    }
+  });
+}

@@ -23,3 +23,8 @@ function put(key, value) {
 // Pre-fills the email on Log in, from the Sign-up success page or the duplicate-email error.
 export const passEmailToLogIn = (email) => put(LOG_IN_EMAIL_KEY, email);
 export const takeEmailForLogIn = () => take(LOG_IN_EMAIL_KEY);
+
+// A short message for the next page to announce, e.g. after Log out.
+const NOTICE_KEY = 'handoff.notice';
+export const passNotice = (text) => put(NOTICE_KEY, text);
+export const takeNotice = () => take(NOTICE_KEY);

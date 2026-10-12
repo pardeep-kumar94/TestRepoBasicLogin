@@ -43,6 +43,8 @@ function fieldErrors(values, screen) {
   return Object.keys(errors).length ? errors : null;
 }
 
+const publicAccount = ({ name, email }) => ({ name, email });
+
 // SHA-256 of email + password, hex-encoded. Mixing in the email stops identical passwords
 // from producing identical hashes across Accounts.
 async function hashPassword(email, password) {
@@ -76,9 +78,26 @@ export function createAuth({ storage = globalThis.localStorage, delayMs = 700 } 
       return email;
     },
 
+    async logIn({ email, password }) {
+      await latency();
+      const errors = fieldErrors({ email, password }, 'login');
+      if (errors) return { ok: false, fieldErrors: errors };
+      email = normalizeEmail(email);
+      const account = readAccounts()[email];
+      if (!account || account.passwordHash !== (await hashPassword(email, password)))
+        return { ok: false, error: 'invalid-credentials' };
+      storage.setItem(SESSION_KEY, email);
+      return { ok: true, account: publicAccount(account) };
+    },
+
+    async logOut() {
+      storage.removeItem(SESSION_KEY);
+    },
+
     // No simulated latency: page guards read this before showing anything.
     async currentSession() {
-      return storage.getItem(SESSION_KEY);
+      const account = readAccounts()[storage.getItem(SESSION_KEY)];
+      return account ? publicAccount(account) : null;
     },
   };
 }
