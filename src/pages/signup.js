@@ -28,6 +28,7 @@ if (await auth.currentSession()) {
   });
   wire(document.querySelector('[data-form]'));
   reveal();
+  auth.onSessionChange((session) => session && location.replace('/'));
 }
 
 function wire(form) {

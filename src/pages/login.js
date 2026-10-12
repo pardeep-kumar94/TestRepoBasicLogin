@@ -26,6 +26,7 @@ if (await auth.currentSession()) {
   const form = document.querySelector('[data-form]');
   wire(form);
   reveal();
+  auth.onSessionChange((session) => session && location.replace('/'));
   if (email) form.elements.password.focus();
   const notice = takeNotice();
   if (notice) showToast(notice);

@@ -53,9 +53,15 @@ async function hashPassword(email, password) {
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-export function createAuth({ storage = globalThis.localStorage, delayMs = 700 } = {}) {
+// `events` receives the browser's `storage` events, which fire when another tab writes.
+export function createAuth({ storage = globalThis.localStorage, events = globalThis, delayMs = 700 } = {}) {
   const latency = () => new Promise((resolve) => setTimeout(resolve, delayMs));
   const readAccounts = () => JSON.parse(storage.getItem(ACCOUNTS_KEY) ?? '{}');
+
+  async function currentSession() {
+    const account = readAccounts()[storage.getItem(SESSION_KEY)];
+    return account ? publicAccount(account) : null;
+  }
 
   return {
     async signUp({ name, email, password }) {
@@ -95,9 +101,13 @@ export function createAuth({ storage = globalThis.localStorage, delayMs = 700 } 
     },
 
     // No simulated latency: page guards read this before showing anything.
-    async currentSession() {
-      const account = readAccounts()[storage.getItem(SESSION_KEY)];
-      return account ? publicAccount(account) : null;
+    currentSession,
+
+    // Calls back with the new Session (or null) when another tab logs in or out.
+    onSessionChange(callback) {
+      events.addEventListener('storage', async (event) => {
+        if (event.key === SESSION_KEY || event.key === null) callback(await currentSession());
+      });
     },
   };
 }

@@ -191,3 +191,59 @@ describe('validateField', () => {
     });
   });
 });
+
+// Like browser localStorage shared by several tabs: a write in one tab fires a `storage`
+// event in every other tab.
+function sharedStorage() {
+  const tabs = [];
+  const shared = memoryStorage();
+  const notifyOthers = (writer, key) =>
+    tabs.filter((tab) => tab !== writer).forEach((tab) => tab.dispatchEvent(Object.assign(new Event('storage'), { key })));
+  return function openTab() {
+    const events = new EventTarget();
+    tabs.push(events);
+    const storage = {
+      getItem: shared.getItem,
+      setItem: (key, value) => (shared.setItem(key, value), notifyOthers(events, key)),
+      removeItem: (key) => (shared.removeItem(key), notifyOthers(events, key)),
+    };
+    return createAuth({ storage, events, delayMs: 0 });
+  };
+}
+
+describe('Session changes in another tab', () => {
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+  it('reports a Log in from another tab', async () => {
+    const openTab = sharedStorage();
+    const [first, second] = [openTab(), openTab()];
+    await first.signUp(ada);
+    const seen = [];
+    second.onSessionChange((session) => seen.push(session));
+    await first.logIn(ada);
+    await settle();
+    expect(seen).toEqual([{ name: 'Ada Lovelace', email: 'ada@example.com' }]);
+  });
+
+  it('reports a Log out from another tab', async () => {
+    const openTab = sharedStorage();
+    const [first, second] = [openTab(), openTab()];
+    await first.signUp(ada);
+    await first.logIn(ada);
+    const seen = [];
+    second.onSessionChange((session) => seen.push(session));
+    await first.logOut();
+    await settle();
+    expect(seen).toEqual([null]);
+  });
+
+  it('stays quiet when another tab only signs up', async () => {
+    const openTab = sharedStorage();
+    const [first, second] = [openTab(), openTab()];
+    const seen = [];
+    second.onSessionChange((session) => seen.push(session));
+    await first.signUp(ada);
+    await settle();
+    expect(seen).toEqual([]);
+  });
+});

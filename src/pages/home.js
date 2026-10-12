@@ -16,6 +16,7 @@ if (pages.includes(path)) {
   const session = await auth.currentSession();
   if (!session) location.replace('/login/');
   else show(session);
+  auth.onSessionChange((current) => current || location.replace('/login/'));
 }
 
 function show({ name, email }) {
