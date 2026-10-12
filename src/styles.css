@@ -15,6 +15,8 @@
   --sun-3: #ffc24b;
   --sun-4: #e8505b;
   --on-sun: #2b1208;
+  --glass: rgb(255 255 255 / 0.15);
+  --glass-border: rgb(255 255 255 / 0.3);
   color-scheme: light;
 }
 
@@ -32,6 +34,9 @@
   --sun-3: #e0a43a;
   --sun-4: #b8364a;
   --on-sun: #fff4ec;
+  /* Smoked rather than frosted, so light text on the gradient stays readable (AA). */
+  --glass: rgb(20 8 4 / 0.5);
+  --glass-border: rgb(255 255 255 / 0.15);
   color-scheme: dark;
 }
 
@@ -45,6 +50,8 @@
   --color-accent-fg: var(--accent-fg);
   --color-danger: var(--danger);
   --color-on-sun: var(--on-sun);
+  --color-glass: var(--glass);
+  --color-glass-border: var(--glass-border);
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-serif: 'Instrument Serif', ui-serif, Georgia, serif;
 }
