@@ -28,8 +28,8 @@ function show({ name, email }) {
       <div class="flex items-center gap-4">
         <div aria-hidden="true" class="grid size-14 shrink-0 place-items-center rounded-full bg-accent font-serif text-3xl text-accent-fg">${escapeHtml(initial)}</div>
         <div class="min-w-0">
-          <h1 class="truncate text-3xl font-semibold tracking-tight">Welcome, ${escapeHtml(name)}</h1>
-          <p class="mt-1 truncate text-muted">${escapeHtml(email)}</p>
+          <h1 class="text-3xl font-semibold tracking-tight text-balance [overflow-wrap:anywhere]">Welcome, ${escapeHtml(name)}</h1>
+          <p class="mt-1 text-muted [overflow-wrap:anywhere]">${escapeHtml(email)}</p>
         </div>
       </div>
       <button type="button" data-log-out
