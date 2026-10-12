@@ -1,13 +1,15 @@
 import { auth } from '../app-auth.js';
-import { takeEmailForLogIn, takeNotice } from '../handoff.js';
+import { requireNoSession } from '../guards.js';
+import { takeNotice } from '../notice.js';
 import { renderShell, reveal } from '../shell.js';
 import { screenSwitch, field, passwordToggle, formError, submitButton, heading, alertIcon, showToast } from '../ui.js';
-import { valuesOf, showFieldErrors, showFormError, setBusy, errorsIn, validateAsYouGo, wirePasswordToggle } from '../form.js';
+import { wireAuthForm } from '../form.js';
 
-if (await auth.currentSession()) {
-  location.replace('/');
-} else {
-  const email = takeEmailForLogIn() ?? '';
+// Taken before the guard, so a message meant for this visit never lingers to a later one.
+const notice = takeNotice();
+
+if (await requireNoSession()) {
+  const email = (await auth.takeLogInEmail()) ?? '';
   renderShell({
     tagline: 'Welcome back.',
     subtitle: 'Your space is right where you left it.',
@@ -24,33 +26,13 @@ if (await auth.currentSession()) {
       </form>`,
   });
   const form = document.querySelector('[data-form]');
-  wire(form);
-  reveal();
-  auth.onSessionChange((session) => session && location.replace('/'));
-  if (email) form.elements.password.focus();
-  const notice = takeNotice();
-  if (notice) showToast(notice);
-}
-
-function wire(form) {
-  validateAsYouGo(form, 'login');
-  wirePasswordToggle(form);
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    showFormError(form, '');
-    const errors = errorsIn(form, 'login');
-    if (errors) return showFieldErrors(form, errors);
-    setBusy(form, true);
-    const result = await auth.logIn(valuesOf(form));
-    setBusy(form, false);
-
-    if (result.ok) {
-      location.assign('/');
-    } else if (result.fieldErrors) {
-      showFieldErrors(form, result.fieldErrors);
-    } else {
-      showFieldErrors(form, {});
-      showFormError(form, `${alertIcon()}<span>Email or password is incorrect.</span>`);
-    }
+  wireAuthForm(form, {
+    screen: 'login',
+    submit: auth.logIn,
+    onSuccess: () => location.assign('/'),
+    errorHtml: { 'invalid-credentials': `${alertIcon()}<span>Email or password is incorrect.</span>` },
   });
+  reveal();
+  if (email) form.elements.password.focus();
+  if (notice) showToast(notice);
 }

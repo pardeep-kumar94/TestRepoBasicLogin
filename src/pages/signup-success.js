@@ -1,14 +1,11 @@
 import { auth } from '../app-auth.js';
-import { passEmailToLogIn } from '../handoff.js';
 import { icons } from '../icons.js';
 import { renderShell, reveal } from '../shell.js';
 
-const email = await auth.consumeSignUpSuccess();
-
-if (!email) {
+// Shown once, right after Sign up; Log in is already primed with the new Account's email.
+if (!(await auth.consumeSignUpSuccess())) {
   location.replace('/login/');
 } else {
-  passEmailToLogIn(email);
   renderShell({
     tagline: 'You’re all set.',
     subtitle: 'Your Account is ready when you are.',

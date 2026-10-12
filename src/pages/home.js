@@ -1,5 +1,5 @@
 import { auth } from '../app-auth.js';
-import { passNotice } from '../handoff.js';
+import { passNotice } from '../notice.js';
 import { renderShell, reveal } from '../shell.js';
 import { escapeHtml } from '../ui.js';
 

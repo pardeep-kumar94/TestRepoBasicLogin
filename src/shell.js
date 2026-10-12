@@ -5,7 +5,7 @@ import { mountThemeToggle } from './theme.js';
 const blobs = '<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="grain"></div>';
 
 // Variant C "Framed bento": a rounded, inset Sunset card beside a centred content column.
-// `content` is trusted markup; escape anything visitor-supplied before passing it in.
+// `content` is trusted markup; escape anything people typed in before passing it in.
 export function renderShell({ tagline, subtitle, content }) {
   document.getElementById('app').innerHTML = `
     <main class="grid min-h-dvh grid-rows-[auto_1fr] gap-3 p-3 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:grid-rows-1 lg:gap-4 lg:p-4">

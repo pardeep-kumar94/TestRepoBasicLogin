@@ -4,6 +4,7 @@
 const ACCOUNTS_KEY = 'auth.accounts';
 const SESSION_KEY = 'auth.session';
 const SIGN_UP_SUCCESS_KEY = 'auth.signUpSuccess';
+const LOG_IN_EMAIL_KEY = 'auth.logInEmail';
 
 // Emails identify Accounts case-insensitively and ignore surrounding spaces.
 const normalizeEmail = (email) => email.trim().toLowerCase();
@@ -30,11 +31,12 @@ const rules = {
 };
 
 // The error message for one field, or '' when it is valid. `screen` is 'login' or 'signup'.
-export function validateField(field, value, screen) {
+function validateField(field, value, screen) {
   return rules[field](value ?? '', screen);
 }
 
-function fieldErrors(values, screen) {
+// Every field's error message, or null when all are valid.
+function validate(values, screen) {
   const errors = {};
   for (const [field, value] of Object.entries(values)) {
     const message = validateField(field, value, screen);
@@ -64,11 +66,16 @@ export function createAuth({ storage = globalThis.localStorage, events = globalT
   }
 
   return {
+    // The same rules signUp and logIn enforce, so pages can check fields as they are typed.
+    validateField,
+    validate,
+
     async signUp({ name, email, password }) {
       await latency();
-      const errors = fieldErrors({ name, email, password }, 'signup');
+      const errors = validate({ name, email, password }, 'signup');
       if (errors) return { ok: false, fieldErrors: errors };
       email = normalizeEmail(email);
+      storage.setItem(LOG_IN_EMAIL_KEY, email);
       const accounts = readAccounts();
       if (accounts[email]) return { ok: false, error: 'email-taken' };
       accounts[email] = { name: name.trim(), email, passwordHash: await hashPassword(email, password) };
@@ -84,9 +91,16 @@ export function createAuth({ storage = globalThis.localStorage, events = globalT
       return email;
     },
 
+    // The email to pre-fill on Log in after Sign up (new or already taken), offered once.
+    async takeLogInEmail() {
+      const email = storage.getItem(LOG_IN_EMAIL_KEY);
+      storage.removeItem(LOG_IN_EMAIL_KEY);
+      return email;
+    },
+
     async logIn({ email, password }) {
       await latency();
-      const errors = fieldErrors({ email, password }, 'login');
+      const errors = validate({ email, password }, 'login');
       if (errors) return { ok: false, fieldErrors: errors };
       email = normalizeEmail(email);
       const account = readAccounts()[email];

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createAuth, validateField } from './auth.js';
+import { createAuth } from './auth.js';
 
 function memoryStorage() {
   const items = new Map();
@@ -85,6 +85,29 @@ describe('Sign-up success page', () => {
   });
 });
 
+describe('Email to pre-fill on Log in', () => {
+  it('is the new Account’s email after Sign up, offered once', async () => {
+    const { auth } = setup();
+    await auth.signUp({ ...ada, email: ' Ada@Example.com ' });
+    expect(await auth.takeLogInEmail()).toBe('ada@example.com');
+    expect(await auth.takeLogInEmail()).toBeNull();
+  });
+
+  it('is the existing Account’s email after Sign up finds it taken', async () => {
+    const { auth } = setup();
+    await auth.signUp(ada);
+    await auth.takeLogInEmail();
+    await auth.signUp({ ...ada, email: 'ADA@example.com ' });
+    expect(await auth.takeLogInEmail()).toBe('ada@example.com');
+  });
+
+  it('is nothing when Sign up was rejected for invalid details', async () => {
+    const { auth } = setup();
+    await auth.signUp({ ...ada, password: 'short' });
+    expect(await auth.takeLogInEmail()).toBeNull();
+  });
+});
+
 describe('Log in', () => {
   it('starts a Session for an Account created at Sign up', async () => {
     const { auth } = setup();
@@ -149,7 +172,9 @@ describe('Log out', () => {
   });
 });
 
-describe('validateField', () => {
+describe('Field rules', () => {
+  const { validateField, validate } = createAuth({ storage: memoryStorage(), delayMs: 0 });
+
   it.each([
     ['name', 'a'.repeat(50), 'signup'],
     ['name', '李明', 'signup'],
@@ -180,15 +205,16 @@ describe('validateField', () => {
     expect(validateField(field, value, screen)).not.toBe('');
   });
 
-  it('agrees with Sign up about what is valid', async () => {
+  it('checks a whole form the way Sign up does', async () => {
     const { auth } = setup();
     const details = { name: 'a'.repeat(51), email: 'ada', password: 'abcdefgh' };
     const { fieldErrors } = await auth.signUp(details);
-    expect(fieldErrors).toEqual({
-      name: validateField('name', details.name, 'signup'),
-      email: validateField('email', details.email, 'signup'),
-      password: validateField('password', details.password, 'signup'),
-    });
+    expect(validate(details, 'signup')).toEqual(fieldErrors);
+    expect(Object.keys(fieldErrors)).toEqual(['name', 'email', 'password']);
+  });
+
+  it('finds nothing wrong with a valid form', () => {
+    expect(validate(ada, 'signup')).toBeNull();
   });
 });
 
