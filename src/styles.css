@@ -90,3 +90,19 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .sunset .blob { animation: none; }
 }
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.spinner {
+  width: 1.15em;
+  height: 1.15em;
+  border-radius: 9999px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: spin 0.7s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner { animation: none; }
+}
